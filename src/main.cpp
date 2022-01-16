@@ -22,6 +22,10 @@ int i;
 int j;
 int k;
 
+char str_battery[5];
+int battery;
+int battery_map;
+
 const char* mqtt_server = "192.168.137.189"; 
 int buzzer;
 int turn;
@@ -382,9 +386,9 @@ void Task2code( void * parameter ){
     sprintf(chardistance, "%5u  ", distance);
     printToOLED(50, 52, chardistance);            
 
-    printToOLED(50, 5, chardrive);
+    //printToOLED(50, 5, chardrive);
     sprintf(charKmHeure, "%0.2f  ", KmHeure);
-    printToOLED(50, 40, charKmHeure);
+    printToOLED(50, 5, charKmHeure);
     //Serial.println(charKmHeure);
 
     sprintf(LiSw1Char, "%2u", LiSw1Value);
@@ -419,7 +423,12 @@ void Task2code( void * parameter ){
       }
     }
     pixels.show();
-    
+
+    battery = analogRead(34);
+    battery_map = map(battery, 2000,3700,0,100);
+    sprintf(str_battery,"%4u",battery_map);
+    printToOLED(50, 40, str_battery);
+    printToOLED(75, 40, "%");
     //Serial.println(xPortGetCoreID());
   }
 }
