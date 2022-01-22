@@ -17,6 +17,9 @@ const char* password = "3049oQ7%";                                           // 
 #define NUMPIXELS 24
 int pix;
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+int red = 0;                                                      // Valeur de la couleur rouge du ruban led
+int green = 0;                                                    // Valeur de la couleur verte du ruban led
+int blue = 0;                                                     // Valeur de la couleur bleue du ruban led
 
 int i;
 int j;
@@ -164,6 +167,15 @@ void callback(char* topic, byte* payload, unsigned int length) {                
   if (String(topic) == "stopCrusher") { //droite/gauche                                            // On vérifie si c'est le bon topic
     stopCrusher = atoi(buffer1);           
   }
+  if (String(topic) == "led_red") {                               // On vérifie si c'est le bon topic
+    red = atoi(buffer1);                                          // Alors on le stocke dans la variable correspondante
+  }
+  if (String(topic) == "led_green") {                             // On vérifie si c'est le bon topic
+    green = atoi(buffer1);                                        // Alors on le stocke dans la variable correspondante
+  }
+  if (String(topic) == "led_blue") {                              // On vérifie si c'est le bon topic
+    blue = atoi(buffer1);                                         // Alors on le stocke dans la variable correspondante
+  }
   
 }
 
@@ -205,7 +217,7 @@ void setup() {
   // LEDs
   pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
   pixels.clear();
-  pixels.setBrightness(50);
+  pixels.setBrightness(200);
   
   client.setServer(mqtt_server, 1883);                                          // On se connecte au serveur MQTT
   client.setCallback(callback);  
@@ -377,10 +389,10 @@ void Task2code( void * parameter ){
   const TickType_t xDelayTask1 = 500 / portTICK_PERIOD_MS ;
   for(;;){ 
 
-  client.publish("speed", charKmHeure);                          // On publie sur un topic l'humidité en chaîne de caractères
-  client.publish("distance", chardistance);                          // On publie sur un topic l'humidité en chaîne de caractères
-  int uS = sonar.ping();
-  distance = uS / US_ROUNDTRIP_CM;
+    client.publish("speed", charKmHeure);                          // On publie sur un topic l'humidité en chaîne de caractères
+    client.publish("distance", chardistance);                          // On publie sur un topic l'humidité en chaîne de caractères
+    int uS = sonar.ping();
+    distance = uS / US_ROUNDTRIP_CM;
     vTaskDelay( xDelayTask1 );
     
     sprintf(chardistance, "%5u  ", distance);
@@ -403,26 +415,59 @@ void Task2code( void * parameter ){
     pix ++;
     if (pix%2 == 0){ 
       //Serial.println(pix);
-      pixels.setBrightness(200);  
        // Set all pixel colors to 'off'
-      for ( i = 0; i <= 2; i++){
-        pixels.setPixelColor(i, 255, 220, 0);
+      if ((charturn[1] == '1' ) ){
+        for ( i = 0; i <= 2; i++){
+          pixels.setPixelColor(i, 255, 100, 0);
+        }
+        for ( j = 9; j <= 11; j++){
+          pixels.setPixelColor(j, 255, 100, 0);
+        }
       }
-      for ( j = 9; j <= 14; j++){
-        pixels.setPixelColor(j, 255, 220, 0);
+
+      else if ((charturn[1] == '2') ){
+        for ( int l = 12; l <= 14; l++){
+          pixels.setPixelColor(j, 255, 100, 0);
+        }
+        for ( k = 21; k <= 23; k++){
+          pixels.setPixelColor(k, 255, 100, 0);
+        }
       }
-      for ( k = 21; k <= 23; k++){
-        pixels.setPixelColor(k, 255, 220, 0);
-      }
-         // Send the updated pixel colors to the hardware.   
-      //pixels.brightness();       
     }
     else {
-      for ( int z = 0; z <= 23; z++){
-        pixels.setPixelColor(z, 0, 0, 0);
+      for ( int z = 0; z <= 23; z++) {
+        pixels.setPixelColor(z, red, green, blue);
       }
     }
-    pixels.show();
+    if (drive == 1 ) {
+      for ( i = 0; i <= 2; i++){
+        pixels.setPixelColor(i, 255, 255, 255);
+      }
+      for ( k = 21; k <= 23; k++){
+        pixels.setPixelColor(k, 255, 255, 255);
+      }
+      for ( j = 9; j <= 11; j++){
+        pixels.setPixelColor(j, 100, 0, 0);
+      }
+      for ( int l = 12; l <= 14; l++){
+        pixels.setPixelColor(j, 100, 0, 0);
+      }
+    }
+    else if (drive == 2) {
+      for ( i = 0; i <= 2; i++){
+        pixels.setPixelColor(i, 255, 255, 255);
+      }
+      for ( k = 21; k <= 23; k++){
+        pixels.setPixelColor(k, 255, 255, 255);
+      }
+      for ( j = 9; j <= 11; j++){
+        pixels.setPixelColor(j, 255, 0, 0);
+      }
+      for ( int l = 12; l <= 14; l++){
+        pixels.setPixelColor(j, 255, 0, 0);
+      }
+    }
+    pixels.show(); // Send the updated pixel colors to the hardware.   
 
     battery = analogRead(34);
     battery_map = map(battery, 2000,3700,0,100);
